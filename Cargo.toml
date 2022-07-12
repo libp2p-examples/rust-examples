@@ -1,0 +1,20 @@
+[package]
+name = "rust-examples"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+libp2p = { version="0.45.1", features=["tcp-tokio", "mdns", "gossipsub", "floodsub"]}
+futures = "0.3"
+log = "0.4.0"
+env_logger = "0.8.4"
+
+[dependencies.async-std]
+version = "1.7.0"
+features = ["attributes"]
+
+[[example]]
+name = "ping"
+
