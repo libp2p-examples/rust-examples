@@ -2,11 +2,14 @@
 name = "rust-examples"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.56.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-libp2p = { version="0.45.1", features=["tcp-tokio", "mdns", "gossipsub", "floodsub"]}
+
+
+libp2p = { version="0.45.1",features=["tcp-tokio", "mdns", "gossipsub", "floodsub"]}
 futures = "0.3"
 log = "0.4.0"
 env_logger = "0.8.4"
@@ -14,6 +17,8 @@ rand = "*"
 void = "*"
 futures-timer = "3.0.2"
 instant = "0.1.11"
+backtrace = "0.3.66"
+smallvec = "*"
 
 [dev-dependencies]
 async-std = { version = "1.10", features = ["attributes"] }
