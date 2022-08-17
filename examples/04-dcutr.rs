@@ -308,9 +308,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
                 SwarmEvent::ConnectionClosed { peer_id,endpoint ,.. } => {
                     println!("disconnect {:?} by {:?}", peer_id,endpoint);
-                    swarm.behaviour_mut()
+                    /*swarm.behaviour_mut()
                     .sendmsg
-                    .remove(&peer_id);
+                    .remove(&peer_id);*/
                 },
 
 
