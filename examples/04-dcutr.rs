@@ -113,7 +113,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     #[behaviour(out_event = "Event", event_process = false)]
     struct Behaviour {
         relay_client: Client,
-        ping: Ping,
         identify: Identify,
         dcutr: dcutr::behaviour::Behaviour,
         sendmsg:rust_examples::Behaviour,
@@ -121,18 +120,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     #[derive(Debug)]
     enum Event {
-        Ping(PingEvent),
         Identify(IdentifyEvent),
         Relay(client::Event),
         Dcutr(dcutr::behaviour::Event),
         Send(rust_examples::Event),
     }
 
-    impl From<PingEvent> for Event {
-        fn from(e: PingEvent) -> Self {
-            Event::Ping(e)
-        }
-    }
 
     impl From<IdentifyEvent> for Event {
         fn from(e: IdentifyEvent) -> Self {
@@ -160,7 +153,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let behaviour = Behaviour {
         relay_client: client,
-        ping: Ping::new(PingConfig::new()),
         identify: Identify::new(IdentifyConfig::new(
             "/TODO/0.0.1".to_string(),
             local_key.public(),
@@ -223,8 +215,28 @@ fn main() -> Result<(), Box<dyn Error>> {
             match swarm.next().await.unwrap() {
                 SwarmEvent::NewListenAddr { .. } => {}
                 SwarmEvent::Dialing { .. } => {}
-                SwarmEvent::ConnectionEstablished { .. } => {}
-                SwarmEvent::Behaviour(Event::Ping(_)) => {}
+
+                SwarmEvent::ConnectionEstablished { peer_id, .. } => {
+                    println!("New connect {:?}", peer_id);
+                    swarm.behaviour_mut()
+                    .sendmsg
+                    .insert(&peer_id);
+
+                    let peers = swarm.connected_peers();
+                    for p in peers {
+                        println!("peer {}",p);
+                    }
+                },
+
+                SwarmEvent::ConnectionClosed { peer_id, .. } => {
+                    println!("disconnect {:?}", peer_id);
+                    swarm.behaviour_mut()
+                    .sendmsg
+                    .remove(&peer_id);
+                },
+
+
+
                 SwarmEvent::Behaviour(Event::Identify(IdentifyEvent::Sent { .. })) => {
                     info!("Told relay its public address.");
                     told_relay_observed_addr = true;
@@ -236,7 +248,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     info!("Relay told us our public address: {:?}", observed_addr);
                     learned_observed_addr = true;
                 }
-                event => panic!("{:?}", event),
+                event => info!("{:?}", event),
             }
 
             if learned_observed_addr && told_relay_observed_addr {
@@ -286,7 +298,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 SwarmEvent::Behaviour(Event::Identify(event)) => {
                     info!("{:?}", event)
                 }
-                SwarmEvent::Behaviour(Event::Ping(_)) => {}
                 SwarmEvent::ConnectionEstablished {
                     peer_id, endpoint, ..
                 } => {
