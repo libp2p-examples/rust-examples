@@ -217,24 +217,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 SwarmEvent::Dialing { .. } => {}
 
                 SwarmEvent::ConnectionEstablished { peer_id, .. } => {
-                    println!("New connect {:?}", peer_id);
-                    swarm.behaviour_mut()
-                    .sendmsg
-                    .insert(&peer_id);
-
-                    let peers = swarm.connected_peers();
-                    for p in peers {
-                        println!("peer {}",p);
-                    }
                 },
-
-                SwarmEvent::ConnectionClosed { peer_id, .. } => {
-                    println!("disconnect {:?}", peer_id);
-                    swarm.behaviour_mut()
-                    .sendmsg
-                    .remove(&peer_id);
-                },
-
 
 
                 SwarmEvent::Behaviour(Event::Identify(IdentifyEvent::Sent { .. })) => {
@@ -302,7 +285,26 @@ fn main() -> Result<(), Box<dyn Error>> {
                     peer_id, endpoint, ..
                 } => {
                     info!("Established connection to {:?} via {:?}", peer_id, endpoint);
+                    swarm.behaviour_mut()
+                        .sendmsg
+                        .insert(&peer_id);
+
+                    let peers = swarm.connected_peers();
+                    for p in peers {
+                        println!("peer {}",p);
+                    }
+
                 }
+                SwarmEvent::ConnectionClosed { peer_id, .. } => {
+                    println!("disconnect {:?}", peer_id);
+                    swarm.behaviour_mut()
+                    .sendmsg
+                    .remove(&peer_id);
+                },
+
+
+
+
                 SwarmEvent::OutgoingConnectionError { peer_id, error } => {
                     info!("Outgoing connection error to {:?}: {:?}", peer_id, error);
                 }
