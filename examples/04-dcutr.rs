@@ -190,12 +190,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
 
-              line = stdin.select_next_some() => swarm
-                .behaviour_mut()
-                .sendmsg
-                .send(line.expect("Stdin not to close").as_bytes()),
-
-
                 _ = delay => {
                     // Likely listening on all interfaces now, thus continuing by breaking the loop.
                     break;
@@ -259,7 +253,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     block_on(async {
         loop {
-            match swarm.next().await.unwrap() {
+          futures::select! {
+
+            line = stdin.select_next_some() => swarm
+                .behaviour_mut()
+                .sendmsg
+                .send(line.expect("Stdin not to close").as_bytes()),
+
+
+
+            event = swarm.select_next_some() => match event{
                 SwarmEvent::NewListenAddr { address, .. } => {
                     info!("Listening on {:?}", address);
                 }
@@ -310,7 +313,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
                 _ => {}
             }
-        }
+        } //select 
+        }//loop
     })
 }
 
