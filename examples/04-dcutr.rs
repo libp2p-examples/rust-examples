@@ -113,6 +113,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     #[behaviour(out_event = "Event", event_process = false)]
     struct Behaviour {
         relay_client: Client,
+        ping:Ping,
         identify: Identify,
         dcutr: dcutr::behaviour::Behaviour,
         sendmsg:rust_examples::Behaviour,
@@ -121,6 +122,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     #[derive(Debug)]
     enum Event {
         Identify(IdentifyEvent),
+        Ping(PingEvent),
         Relay(client::Event),
         Dcutr(dcutr::behaviour::Event),
         Send(rust_examples::Event),
@@ -133,6 +135,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
+    impl From<PingEvent> for Event {
+    fn from(e: PingEvent) -> Self {
+        Event::Ping(e)
+    }
+}
     impl From<client::Event> for Event {
         fn from(e: client::Event) -> Self {
             Event::Relay(e)
@@ -153,6 +160,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let behaviour = Behaviour {
         relay_client: client,
+        ping: Ping::new(PingConfig::new()),
         identify: Identify::new(IdentifyConfig::new(
             "/TODO/0.0.1".to_string(),
             local_key.public(),
