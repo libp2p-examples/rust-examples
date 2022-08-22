@@ -41,7 +41,7 @@ use std::error::Error;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 use async_std::io;
-use futures::{prelude::*,select};
+use futures::{prelude::*};
 
 
 #[derive(Debug, Parser)]
@@ -89,7 +89,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let local_key = identity::Keypair::generate_ed25519();
     //let local_key = generate_ed25519(opts.secret_key_seed);
     let local_peer_id = PeerId::from(local_key.public());
-    info!("Local peer id: {:?}", local_peer_id);
+    println!("Local peer id: {:?}", local_peer_id);
 
     let (relay_transport, client) = Client::new_transport_and_behaviour(local_peer_id);
 
@@ -192,7 +192,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 event = swarm.next() => {
                     match event.unwrap() {
                         SwarmEvent::NewListenAddr { address, .. } => {
-                            info!("Listening on {:?}", address);
+                            println!("Listening on {:?}", address);
                         }
                         event => panic!("{:?}", event),
                     }
@@ -219,6 +219,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 SwarmEvent::Dialing { .. } => {}
 
                 SwarmEvent::ConnectionEstablished { peer_id, .. } => {
+                    info!("{}",peer_id);
                 },
 
 
@@ -230,7 +231,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     info: IdentifyInfo { observed_addr, .. },
                     ..
                 })) => {
-                    info!("Relay told us our public address: {:?}", observed_addr);
+                    println!("Relay told us our public address: {:?}", observed_addr);
                     learned_observed_addr = true;
                 }
                 event => info!("{:?}", event),
@@ -287,7 +288,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     info!("{:?}", event)
                 }
                 SwarmEvent::Behaviour(Event::Send(event)) => {
-                    info!("{:?}", event)
+                    println!("{:?}", event)
                 }
                 SwarmEvent::Behaviour(Event::Identify(event)) => {
                     info!("{:?}", event)
@@ -295,7 +296,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 SwarmEvent::ConnectionEstablished {
                     peer_id, endpoint, ..
                 } => {
-                    info!("Established connection to {:?} via {:?}", peer_id, endpoint);
+                    println!("Established connection to {:?} via {:?}", peer_id, endpoint);
                     swarm.behaviour_mut()
                         .sendmsg
                         .insert(&peer_id);
@@ -324,11 +325,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     })
 }
 
-fn generate_ed25519(secret_key_seed: u8) -> identity::Keypair {
+/*fn generate_ed25519(secret_key_seed: u8) -> identity::Keypair {
     let mut bytes = [0u8; 32];
     bytes[0] = secret_key_seed;
 
     let secret_key = identity::ed25519::SecretKey::from_bytes(&mut bytes)
         .expect("this returns `Err` only if the length is wrong; the length is correct; qed");
     identity::Keypair::Ed25519(secret_key.into())
-}
+}*/
