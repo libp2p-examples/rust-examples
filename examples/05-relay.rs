@@ -38,7 +38,8 @@ use std::error::Error;
 use std::net::{Ipv4Addr, Ipv6Addr};
 use std::num::NonZeroU32;
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[async_std::main]
+async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::init();
 
     let opt = Opt::parse();
@@ -49,18 +50,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let local_peer_id = PeerId::from(local_key.public());
     println!("Local peer id: {:?}", local_peer_id);
 
-    let tcp_transport = TcpTransport::default();
-
-    let noise_keys = noise::Keypair::<noise::X25519Spec>::new()
-        .into_authentic(&local_key)
-        .expect("Signing libp2p-noise static DH keypair failed.");
-
-    let transport = tcp_transport
-        .upgrade(upgrade::Version::V1)
-        .authenticate(noise::NoiseConfig::xx(noise_keys).into_authenticated())
-        .multiplex(libp2p::yamux::YamuxConfig::default())
-        .boxed();
-
+    let transport = libp2p::development_transport(local_key.clone()).await?;
 
     let behaviour = Behaviour {
         relay: Relay::new(local_peer_id, Default::default()),
