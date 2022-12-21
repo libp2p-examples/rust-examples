@@ -280,6 +280,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }*/
 
+
+    swarm
+       .listen_on(opts.relay_address.clone().with(Protocol::P2pCircuit))
+       .unwrap();
+
     block_on(async {
         loop {
           futures::select! {
@@ -377,7 +382,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                                     .with(Protocol::P2p(peer.into())),
                                      )
                                     .unwrap();
-
+                                println!("Dial {}",opts.relay_address.clone()
+                                    .with(Protocol::P2pCircuit)
+                                    .with(Protocol::P2p(peer.into())) );
                             }
                         }
                     }
