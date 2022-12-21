@@ -220,6 +220,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Connect to the relay server. Not for the reservation or relayed connection, but to (a) learn
     // our local public address and (b) enable a freshly started relay to learn its public address.
     swarm.dial(opts.relay_address.clone()).unwrap();
+
     block_on(async {
         let mut learned_observed_addr = false;
         let mut told_relay_observed_addr = false;
@@ -367,8 +368,16 @@ fn main() -> Result<(), Box<dyn Error>> {
                                     } else {
                                         address.clone()
                                     };
+                                
+                                //swarm.dial(address_with_p2p).unwrap()
+                                swarm
+                                .dial(
+                                    opts.relay_address.clone()
+                                    .with(Protocol::P2pCircuit)
+                                    .with(Protocol::P2p(peer.into())),
+                                     )
+                                    .unwrap();
 
-                                swarm.dial(address_with_p2p).unwrap()
                             }
                         }
                     }
